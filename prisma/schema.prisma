@@ -1,0 +1,175 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?   // Profile Picture URL
+  password      String?   // For credentials-based login
+  bio           String?
+  isArtist      Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  artworks      Artwork[]
+  bids          Bid[]
+  orders        Order[]
+  posts         Post[]
+  comments      Comment[]
+  memberships   CommunityMember[]
+  accounts      Account[]
+  sessions      Session[]
+}
+
+model Artwork {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  imageUrl    String
+  price       Float    // For direct sale
+  status      ArtStatus @default(FOR_SALE) // e.g., FOR_SALE, IN_AUCTION, SOLD
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  artistId    String
+  artist      User     @relation(fields: [artistId], references: [id])
+  
+  auction     Auction?
+  order       Order?
+}
+
+enum ArtStatus {
+  FOR_SALE
+  IN_AUCTION
+  SOLD
+}
+
+model Auction {
+  id          String   @id @default(cuid())
+  startingBid Float
+  currentBid  Float
+  startTime   DateTime
+  endTime     DateTime
+  status      AuctionStatus @default(ACTIVE)
+
+  artworkId   String   @unique
+  artwork     Artwork  @relation(fields: [artworkId], references: [id])
+  bids        Bid[]
+}
+
+enum AuctionStatus {
+  ACTIVE
+  ENDED
+  CANCELLED
+}
+
+model Bid {
+  id        String   @id @default(cuid())
+  amount    Float
+  createdAt DateTime @default(now())
+
+  auctionId String
+  auction   Auction  @relation(fields: [auctionId], references: [id])
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model Order {
+  id          String      @id @default(cuid())
+  amount      Float
+  paymentId   String      @unique // From Razorpay/Stripe
+  status      OrderStatus @default(PENDING)
+  createdAt   DateTime    @default(now())
+
+  buyerId     String
+  buyer       User        @relation(fields: [buyerId], references: [id])
+  artworkId   String      @unique
+  artwork     Artwork     @relation(fields: [artworkId], references: [id])
+}
+
+enum OrderStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
+
+model Community {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String
+  creatorId   String
+  createdAt   DateTime @default(now())
+
+  posts       Post[]
+  members     CommunityMember[]
+}
+
+model Post {
+  id        String    @id @default(cuid())
+  title     String
+  content   Json?
+  createdAt DateTime  @default(now())
+
+  authorId    String
+  author      User      @relation(fields: [authorId], references: [id])
+  communityId String
+  community   Community @relation(fields: [communityId], references: [id])
+  comments    Comment[]
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  text      String
+  createdAt DateTime @default(now())
+
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id])
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id])
+}
+
+model CommunityMember {
+  id          String   @id @default(cuid())
+  communityId String
+  community   Community @relation(fields: [communityId], references: [id])
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+
+  @@unique([communityId, userId])
+}
+
+// Models for NextAuth.js
+model Account {
+  id                 String  @id @default(cuid())
+  userId             String
+  type               String
+  provider           String
+  providerAccountId  String
+  refresh_token      String? 
+  access_token       String? 
+  expires_at         Int?
+  token_type         String?
+  scope              String?
+  id_token           String? 
+  session_state      String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
