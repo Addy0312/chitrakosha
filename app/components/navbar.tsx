@@ -1,0 +1,85 @@
+'use client';
+
+import { useState } from 'react';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import {
+  Menu,
+  X,
+  Search,
+  Heart,
+  ShoppingCart,
+} from 'lucide-react';
+import { ModeToggle } from '@/components/mode-toggle';
+
+export function Navbar() {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  return (
+    <header className="bg-card shadow-card sticky top-0 z-50 border-b border-border">
+      <div className="container mx-auto px-4 py-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <div className="w-8 h-8 bg-gradient-saffron rounded-full flex items-center justify-center">
+              <span className="text-white font-bold text-lg">च</span>
+            </div>
+            <h1 className="text-2xl font-bold text-foreground">Chitrakosha</h1>
+          </div>
+
+          {/* Desktop Navigation */}
+          <nav className="hidden md:flex items-center space-x-8">
+            <Link href="/" className="text-foreground hover:text-primary transition-colors">Home</Link>
+            <Link href="/explore" className="text-foreground hover:text-primary transition-colors">Explore</Link>
+            <Link href="/sell" className="text-foreground hover:text-primary transition-colors">Sell Art</Link>
+            <Link href="/commission" className="text-foreground hover:text-primary transition-colors">Commission</Link>
+            <Link href="/auctions" className="text-foreground hover:text-primary transition-colors">Auctions</Link>
+            <Link href="/community" className="text-foreground hover:text-primary transition-colors">Community</Link>
+          </nav>
+
+          <div className="hidden md:flex items-center space-x-4">
+            <Button variant="ghost" size="icon">
+              <Search className="w-5 h-5" />
+            </Button>
+            <Button variant="ghost" size="icon">
+              <Heart className="w-5 h-5" />
+            </Button>
+            <Button variant="ghost" size="icon">
+              <ShoppingCart className="w-5 h-5" />
+            </Button>
+            <Button variant="outline">Login</Button>
+            <Button className="bg-gradient-saffron hover:opacity-90">Sign Up</Button>
+            <ModeToggle />
+          </div>
+
+          {/* Mobile Menu Button */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="md:hidden"
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+          >
+            {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </Button>
+        </div>
+
+        {/* Mobile Navigation */}
+        {isMenuOpen && (
+          <nav className="md:hidden mt-4 pb-4 border-t border-border pt-4">
+            <div className="flex flex-col space-y-4">
+              <Link href="/" className="text-foreground hover:text-primary transition-colors">Home</Link>
+              <Link href="/explore" className="text-foreground hover:text-primary transition-colors">Explore</Link>
+              <Link href="/sell" className="text-foreground hover:text-primary transition-colors">Sell Art</Link>
+              <Link href="/commission" className="text-foreground hover:text-primary transition-colors">Commission</Link>
+              <Link href="/auctions" className="text-foreground hover:text-primary transition-colors">Auctions</Link>
+              <Link href="/community" className="text-foreground hover:text-primary transition-colors">Community</Link>
+              <div className="flex space-x-2 pt-4">
+                <Button variant="outline" className="flex-1">Login</Button>
+                <Button className="flex-1 bg-gradient-saffron hover:opacity-90">Sign Up</Button>
+              </div>
+            </div>
+          </nav>
+        )}
+      </div>
+    </header>
+  );
+}

@@ -14,7 +14,7 @@ A single account model is recommended. A user can sign up and seamlessly switch 
 - **UI Components:** shadcn/ui
 - **Styling:** Tailwind CSS
 - **Database & ORM:** PostgreSQL with Prisma. Prisma provides excellent type safety and works seamlessly with Next.js.
-- **Authentication:** NextAuth.js (now Auth.js). It's the standard for Next.js and supports various providers (email, Google, etc.).
+- **Authentication:** NextAuth.js (now Auth.js). It's the standard for Next.js and will be configured for email/password authentication only.
 - **Payments (India-specific):**
     - **Primary:** Razorpay. Excellent API, widely used in India.
     - **Secondary:** Stripe (with full India support).
