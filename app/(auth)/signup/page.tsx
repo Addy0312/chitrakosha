@@ -67,17 +67,41 @@ export default function SignupPage() {
           const newFieldErrors: Record<string, string> = {};
           data.errors.forEach((err: any) => {
             if (err.path && err.path.length > 0) {
-              newFieldErrors[err.path[0]] = err.message;
+              const fieldName = err.path[0];
+              // Use a more user-friendly error message
+              let errorMessage = err.message;
+              
+              // Customize error messages for better user experience
+              if (fieldName === 'password' && err.code === 'invalid_string') {
+                errorMessage = "Password must contain uppercase, lowercase, number, and special character.";
+              } else if (fieldName === 'phone' && err.code === 'too_small') {
+                errorMessage = "Phone number must be at least 10 digits.";
+              } else if (fieldName === 'phone' && err.code === 'invalid_string') {
+                errorMessage = "Please enter a valid phone number.";
+              }
+              
+              newFieldErrors[fieldName] = errorMessage;
             }
           });
           
           if (Object.keys(newFieldErrors).length > 0) {
             setFieldErrors(newFieldErrors);
             // Show toast for validation errors
-            toast.error("Please fix the errors in the form");
+            toast.error("Please fix the highlighted errors in the form");
+            
+            // Focus on the first field with an error
+            const firstErrorField = Object.keys(newFieldErrors)[0];
+            const element = document.querySelector(`[name="${firstErrorField}"]`) as HTMLElement;
+            if (element) {
+              element.focus();
+            }
           } else {
             setError(data.message || 'Something went wrong');
           }
+        } else if (data.field && data.message) {
+          // Handle single field error (like email already exists)
+          setFieldErrors({ [data.field]: data.message });
+          toast.error(data.message);
         } else {
           setError(data.message || 'Something went wrong');
         }
@@ -216,8 +240,15 @@ export default function SignupPage() {
                     <FormItem>
                       <FormLabel>Phone Number (Optional)</FormLabel>
                       <FormControl>
-                        <Input placeholder="+919876543210" {...field} />
+                        <Input 
+                          placeholder="+919876543210" 
+                          {...field} 
+                          className={fieldErrors.phone ? 'border-red-500' : ''}
+                        />
                       </FormControl>
+                      {fieldErrors.phone && (
+                        <p className="text-sm font-medium text-red-500">{fieldErrors.phone}</p>
+                      )}
                       <FormMessage />
                     </FormItem>
                   )}
@@ -230,8 +261,15 @@ export default function SignupPage() {
                     <FormItem>
                       <FormLabel>City (Optional)</FormLabel>
                       <FormControl>
-                        <Input placeholder="Mumbai" {...field} />
+                        <Input 
+                          placeholder="Mumbai" 
+                          {...field} 
+                          className={fieldErrors.city ? 'border-red-500' : ''}
+                        />
                       </FormControl>
+                      {fieldErrors.city && (
+                        <p className="text-sm font-medium text-red-500">{fieldErrors.city}</p>
+                      )}
                       <FormMessage />
                     </FormItem>
                   )}
@@ -261,7 +299,14 @@ export default function SignupPage() {
                       </div>
                     )}
                     <FormDescription className="text-xs">
-                      Must be at least 8 characters with uppercase, lowercase, number, and special character.
+                      Password must:
+                      <ul className="list-disc pl-4 mt-1 space-y-1">
+                        <li>Be at least 8 characters long</li>
+                        <li>Include at least one uppercase letter (A-Z)</li>
+                        <li>Include at least one lowercase letter (a-z)</li>
+                        <li>Include at least one number (0-9)</li>
+                        <li>Include at least one special character (!@#$%^&*)</li>
+                      </ul>
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
