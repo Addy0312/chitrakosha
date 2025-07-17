@@ -11,9 +11,11 @@ import {
   ShoppingCart,
 } from 'lucide-react';
 import { ModeToggle } from '@/components/mode-toggle';
+import { useSession, signOut } from 'next-auth/react';
 
 export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { data: session } = useSession();
 
   return (
     <header className="bg-card shadow-card sticky top-0 z-50 border-b border-border">
@@ -46,8 +48,23 @@ export function Navbar() {
             <Button variant="ghost" size="icon">
               <ShoppingCart className="w-5 h-5" />
             </Button>
-            <Button variant="outline">Login</Button>
-            <Button className="bg-gradient-saffron hover:opacity-90">Sign Up</Button>
+            {session ? (
+              <>
+                <Button variant="outline" asChild>
+                  <Link href={`/profile/${session.user?.id}`}>Profile</Link>
+                </Button>
+                <Button onClick={() => signOut()}>Logout</Button>
+              </>
+            ) : (
+              <>
+                <Button variant="outline" asChild>
+                  <Link href="/login">Login</Link>
+                </Button>
+                <Button className="bg-gradient-saffron hover:opacity-90" asChild>
+                  <Link href="/signup">Sign Up</Link>
+                </Button>
+              </>
+            )}
             <ModeToggle />
           </div>
 
@@ -73,8 +90,23 @@ export function Navbar() {
               <Link href="/auctions" className="text-foreground hover:text-primary transition-colors">Auctions</Link>
               <Link href="/community" className="text-foreground hover:text-primary transition-colors">Community</Link>
               <div className="flex space-x-2 pt-4">
-                <Button variant="outline" className="flex-1">Login</Button>
-                <Button className="flex-1 bg-gradient-saffron hover:opacity-90">Sign Up</Button>
+                {session ? (
+                  <>
+                    <Button variant="outline" asChild className="flex-1">
+                      <Link href={`/profile/${session.user?.id}`}>Profile</Link>
+                    </Button>
+                    <Button onClick={() => signOut()} className="flex-1">Logout</Button>
+                  </>
+                ) : (
+                  <>
+                    <Button variant="outline" asChild className="flex-1">
+                      <Link href="/login">Login</Link>
+                    </Button>
+                    <Button className="flex-1 bg-gradient-saffron hover:opacity-90" asChild>
+                      <Link href="/signup">Sign Up</Link>
+                    </Button>
+                  </>
+                )}
               </div>
             </div>
           </nav>

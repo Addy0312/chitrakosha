@@ -12,18 +12,34 @@ export default function ArtistOnboardingPage() {
   const [portfolioUrl, setPortfolioUrl] = useState('');
   const [bio, setBio] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real application, this would send data to an API for review
-    console.log({
-      artistName,
-      portfolioUrl,
-      bio,
-    });
-    alert('Artist application submitted! We will review your application shortly.');
-    setArtistName('');
-    setPortfolioUrl('');
-    setBio('');
+    try {
+      const response = await fetch('/api/artist-applications', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          artistName,
+          portfolioUrl,
+          bio,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to submit application');
+      }
+
+      alert('Artist application submitted! We will review your application shortly.');
+      setArtistName('');
+      setPortfolioUrl('');
+      setBio('');
+    } catch (error: any) {
+      alert(`Error: ${error.message}`);
+      console.error('Error submitting artist application:', error);
+    }
   };
 
   return (

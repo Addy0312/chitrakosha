@@ -1,18 +1,15 @@
-import { PrismaAdapter } from "@auth/prisma-adapter"
-import { PrismaClient } from "@prisma/client"
-import EmailProvider from "next-auth/providers/email"
-import CredentialsProvider from "next-auth/providers/credentials"
-import bcrypt from 'bcryptjs'
+import { PrismaAdapter } from "@auth/prisma-adapter";
+import { PrismaClient } from "@prisma/client";
+import CredentialsProvider from "next-auth/providers/credentials";
+import bcrypt from 'bcryptjs';
+import { AuthOptions, User as NextAuthUser } from "next-auth";
+import { Adapter } from "next-auth/adapters";
 
-const prisma = new PrismaClient()
+const prisma = new PrismaClient();
 
-export const authOptions = {
-  adapter: PrismaAdapter(prisma),
+export const authOptions: AuthOptions = {
+  adapter: PrismaAdapter(prisma) as Adapter,
   providers: [
-    EmailProvider({
-      server: process.env.EMAIL_SERVER,
-      from: process.env.EMAIL_FROM,
-    }),
     CredentialsProvider({
       name: "Credentials",
       credentials: {
@@ -36,18 +33,34 @@ export const authOptions = {
           return null;
         }
 
-        return { id: user.id, name: user.name, email: user.email, isArtist: user.isArtist };
+        return {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          isArtist: user.isArtist,
+          emailVerified: user.emailVerified,
+        } as NextAuthUser;
       }
     })
   ],
   pages: {
-    signIn: "/login", // Custom login page
+    signIn: "/login",
   },
   callbacks: {
-    async session({ session, user }: { session: any, user: any }) {
-      session.user.id = user.id;
-      session.user.isArtist = user.isArtist;
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id;
+        token.isArtist = (user as NextAuthUser).isArtist;
+      }
+      return token;
+    },
+    async session({ session, token }) {
+      session.user.id = token.id as string;
+      session.user.isArtist = token.isArtist as boolean;
       return session;
     },
   },
-}
+  session: {
+    strategy: "jwt",
+  },
+};
