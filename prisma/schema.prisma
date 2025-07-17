@@ -32,6 +32,7 @@ model User {
   accounts          Account[]
   sessions          Session[]
   artistApplication ArtistApplication?
+  notifications     Notification[]
 }
 
 model Artwork {
@@ -187,6 +188,7 @@ model ArtistApplication {
   portfolioUrl String?
   bio          String
   status       ArtistApplicationStatus @default(PENDING)
+  metadata     Json?                   // For storing additional fields like artStyle, yearsOfExperience, portfolioSamples
   createdAt    DateTime                @default(now())
   updatedAt    DateTime                @updatedAt
 }
@@ -195,4 +197,28 @@ enum ArtistApplicationStatus {
   PENDING
   APPROVED
   REJECTED
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  type      NotificationType
+  title     String
+  message   String
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+  
+  userId    String
+  user      User             @relation(fields: [userId], references: [id])
+  
+  // Optional reference to related entities
+  relatedEntityId String?
+  relatedEntityType String?
+}
+
+enum NotificationType {
+  ARTIST_APPLICATION_APPROVED
+  ARTIST_APPLICATION_REJECTED
+  ARTWORK_SOLD
+  NEW_COMMENT
+  SYSTEM_NOTIFICATION
 }

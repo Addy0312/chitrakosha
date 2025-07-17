@@ -16,11 +16,11 @@ interface FileUploadProps {
 
 export function FileUpload({
   onFileChange,
-  currentImageUrl,
+  currentImageUrl = null,
   accept = 'image/*',
   label = 'Upload Image'
 }: FileUploadProps) {
-  const [preview, setPreview] = useState<string | null>(currentImageUrl || null);
+  const [preview, setPreview] = useState<string | null>(currentImageUrl);
   const [fileName, setFileName] = useState<string | null>(null);
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {

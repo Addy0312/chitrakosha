@@ -42,13 +42,13 @@
   - Implement the complete artist application and approval process
   - _Requirements: 2.1, 2.2_
 
-- [ ] 3.1 Create Artist Application Form
+- [x] 3.1 Create Artist Application Form
   - Build application form with required fields
   - Implement file upload for portfolio samples
   - Add validation and submission handling
   - _Requirements: 2.1_
 
-- [ ] 3.2 Implement Application Review System
+- [x] 3.2 Implement Application Review System
   - Create admin interface for reviewing applications
   - Implement approval/rejection functionality
   - Add notification system for application status updates

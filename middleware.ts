@@ -29,6 +29,11 @@ const artistRoutes = [
   '/dashboard/statistics',
 ];
 
+// Define routes that require admin role
+const adminRoutes = [
+  '/admin',
+];
+
 // Define API routes that require authentication
 const protectedApiRoutes = [
   '/api/users',
@@ -44,6 +49,11 @@ const artistApiRoutes = [
   '/api/artworks/update',
   '/api/artworks/delete',
   '/api/auctions/create',
+];
+
+// Define API routes that require admin role
+const adminApiRoutes = [
+  '/api/admin',
 ];
 
 export default withAuth(
@@ -62,6 +72,11 @@ export default withAuth(
     const isArtistRoute = artistRoutes.some(route => 
       pathname === route || pathname.startsWith(`${route}/`)
     );
+    
+    // Check if the route requires admin role
+    const isAdminRoute = adminRoutes.some(route => 
+      pathname === route || pathname.startsWith(`${route}/`)
+    );
 
     // Check if the API route is protected
     const isProtectedApiRoute = protectedApiRoutes.some(route => 
@@ -70,6 +85,11 @@ export default withAuth(
 
     // Check if the API route requires artist role
     const isArtistApiRoute = artistApiRoutes.some(route => 
+      pathname.startsWith(route)
+    );
+    
+    // Check if the API route requires admin role
+    const isAdminApiRoute = adminApiRoutes.some(route => 
       pathname.startsWith(route)
     );
 
@@ -83,6 +103,18 @@ export default withAuth(
     // Handle artist-only page routes
     if (isArtistRoute && !isArtist) {
       return NextResponse.redirect(new URL('/dashboard', req.url));
+    }
+    
+    // Handle admin-only page routes
+    if (isAdminRoute) {
+      // For demo purposes, we'll check if the user has an admin email
+      // In a real app, you would check for an admin role
+      const user = token?.email;
+      const isAdmin = user === 'admin@chitrakosha.com';
+      
+      if (!isAuthenticated || !isAdmin) {
+        return NextResponse.redirect(new URL('/', req.url));
+      }
     }
 
     // Handle protected API routes
@@ -111,6 +143,27 @@ export default withAuth(
           headers: { 'content-type': 'application/json' }
         }
       );
+    }
+
+    // Handle admin-only API routes
+    if (isAdminApiRoute) {
+      // For demo purposes, we'll check if the user has an admin email
+      // In a real app, you would check for an admin role
+      const user = token?.email;
+      const isAdmin = user === 'admin@chitrakosha.com';
+      
+      if (!isAuthenticated || !isAdmin) {
+        return new NextResponse(
+          JSON.stringify({ 
+            success: false, 
+            message: 'Admin privileges required' 
+          }),
+          { 
+            status: 403,
+            headers: { 'content-type': 'application/json' }
+          }
+        );
+      }
     }
 
     return NextResponse.next();

@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { ModeToggle } from '@/components/mode-toggle';
 import { useSession, signOut } from 'next-auth/react';
+import { NotificationDropdown } from '@/components/notifications';
 
 export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -50,6 +51,8 @@ export function Navbar() {
             </Button>
             {session ? (
               <>
+                {/* Notification dropdown for authenticated users */}
+                <NotificationDropdown />
                 <Button variant="outline" asChild>
                   <Link href={`/profile/${session.user?.id}`}>Profile</Link>
                 </Button>
@@ -89,6 +92,12 @@ export function Navbar() {
               <Link href="/commission" className="text-foreground hover:text-primary transition-colors">Commission</Link>
               <Link href="/auctions" className="text-foreground hover:text-primary transition-colors">Auctions</Link>
               <Link href="/community" className="text-foreground hover:text-primary transition-colors">Community</Link>
+              {session && (
+                <div className="flex items-center justify-start gap-2 pt-2 pb-2">
+                  <NotificationDropdown />
+                  <span className="text-sm text-muted-foreground">Notifications</span>
+                </div>
+              )}
               <div className="flex space-x-2 pt-4">
                 {session ? (
                   <>
