@@ -22,23 +22,23 @@
   - Implement redirect logic for unauthenticated users
   - _Requirements: 1.8_
 
-- [ ] 2. User Profile System
+- [x] 2. User Profile System
   - Create a complete user profile system with editing capabilities
   - _Requirements: 1.5, 1.6_
 
-- [ ] 2.1 Implement User Profile Page
+- [x] 2.1 Implement User Profile Page
   - Create dynamic profile page with user information display
   - Add profile picture upload functionality
   - Display user's purchased artworks and activity
   - _Requirements: 1.5_
 
-- [ ] 2.2 Create Profile Edit Functionality
+- [x] 2.2 Create Profile Edit Functionality
   - Implement form for editing profile information
   - Add image upload for profile pictures
   - Create validation and error handling
   - _Requirements: 1.6_
 
-- [ ] 3. Artist Onboarding System
+- [-] 3. Artist Onboarding System
   - Implement the complete artist application and approval process
   - _Requirements: 2.1, 2.2_
 

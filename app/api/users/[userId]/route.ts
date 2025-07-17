@@ -15,11 +15,65 @@ export async function GET(
       select: { 
         id: true,
         name: true,
+        firstName: true,
+        lastName: true,
         email: true,
         bio: true,
         isArtist: true,
         image: true,
-      } // Select specific fields to return
+        city: true,
+        phone: true,
+        createdAt: true,
+        // Include artworks if the user is an artist
+        artworks: {
+          select: {
+            id: true,
+            title: true,
+            description: true,
+            imageUrl: true,
+            price: true,
+            status: true,
+            createdAt: true,
+          }
+        },
+        // Include purchased artworks (orders)
+        orders: {
+          where: {
+            status: 'COMPLETED'
+          },
+          select: {
+            id: true,
+            createdAt: true,
+            artwork: {
+              select: {
+                id: true,
+                title: true,
+                description: true,
+                imageUrl: true,
+                price: true,
+                artist: {
+                  select: {
+                    id: true,
+                    name: true
+                  }
+                }
+              }
+            }
+          }
+        },
+        // Include community memberships for activity
+        memberships: {
+          select: {
+            id: true,
+            community: {
+              select: {
+                id: true,
+                name: true
+              }
+            }
+          }
+        }
+      }
     });
 
     if (!user) {
@@ -45,9 +99,9 @@ export async function PATCH(
     }
 
     const body = await req.json();
-    const { name, bio } = body;
+    const { name, firstName, lastName, bio, image, city, phone } = body;
 
-    if (!name && !bio) {
+    if (!name && !bio && !image && !firstName && !lastName && !city && !phone) {
       return new NextResponse("No fields to update", { status: 400 });
     }
 
@@ -55,7 +109,12 @@ export async function PATCH(
       where: { id: params.userId },
       data: {
         ...(name && { name }),
+        ...(firstName && { firstName }),
+        ...(lastName && { lastName }),
         ...(bio && { bio }),
+        ...(image && { image }),
+        ...(city && { city }),
+        ...(phone && { phone }),
       },
     });
 
