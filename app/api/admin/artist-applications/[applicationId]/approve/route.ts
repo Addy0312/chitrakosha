@@ -4,6 +4,8 @@ import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/db';
 import { createNotification } from '@/lib/services/notification';
 
+export const dynamic = 'force-dynamic';
+
 // Helper function to check if user is admin
 async function isAdmin(userId: string) {
   // In a real application, you would check if the user has admin privileges

@@ -103,7 +103,7 @@ export async function POST(request: Request) {
         console.error('Prisma error:', prismaError);
         
         // Check if it's a field error
-        if (prismaError.message && prismaError.message.includes("Unknown field")) {
+        if (prismaError instanceof Error && prismaError.message && prismaError.message.includes("Unknown field")) {
           // Try creating user without firstName and lastName fields
           const user = await prisma.user.create({
             data: {

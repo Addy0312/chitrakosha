@@ -4,6 +4,8 @@ import { authOptions } from '@/lib/auth';
 import { markNotificationAsRead } from '@/lib/services/notification';
 import prisma from '@/lib/db';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(
   req: Request,
   { params }: { params: { notificationId: string } }
