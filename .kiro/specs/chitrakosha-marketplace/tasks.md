@@ -64,12 +64,12 @@
   - Add notification system for application status updates
   - _Requirements: 2.2_
 
-- [ ] 4. Artist Dashboard
+- [-] 4. Artist Dashboard
 
   - Build a comprehensive dashboard for artists to manage their artwork
   - _Requirements: 2.3, 2.4, 2.5, 2.6, 2.7, 2.8_
 
-- [ ] 4.1 Enhance Artwork Management
+- [x] 4.1 Enhance Artwork Management
 
   - Connect the existing UI to the database
   - Implement proper CRUD operations for artworks
