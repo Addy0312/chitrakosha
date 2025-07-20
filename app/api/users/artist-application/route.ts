@@ -12,8 +12,16 @@ const artistApplicationSchema = z.object({
   artStyle: z.string().min(1, "Please select your primary art style"),
   yearsOfExperience: z.string().min(1, "Please select your experience level"),
   bio: z.string().min(50, "Bio must be at least 50 characters"),
-  portfolioUrl: z.string().url("Please enter a valid URL").optional().or(z.literal("")),
-  portfolioSamples: z.array(z.string().url()).min(1, "At least one portfolio sample is required"),
+  portfolioUrl: z.string().optional().refine((val) => {
+    if (!val || val === "") return true;
+    try {
+      new URL(val);
+      return true;
+    } catch {
+      return false;
+    }
+  }, "Please enter a valid URL"),
+  portfolioSamples: z.array(z.string()).min(1, "At least one portfolio sample is required"),
 });
 
 export async function POST(req: Request) {
@@ -26,6 +34,7 @@ export async function POST(req: Request) {
 
     // Parse request body
     const body = await req.json();
+    console.log('Received application data:', body);
 
     // Validate input
     const validatedData = artistApplicationSchema.parse(body);

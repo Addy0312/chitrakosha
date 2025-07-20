@@ -17,7 +17,11 @@ async function isAdmin(userId: string) {
   
   // For demo purposes, consider specific emails as admins
   // In production, you would have a proper role system
-  const adminEmails = ['admin@chitrakosha.com'];
+  const adminEmails = [
+    'admin@chitrakosha.com',
+    'admin@example.com',
+    // Add your email here for testing
+  ];
   return user && adminEmails.includes(user.email);
 }
 
