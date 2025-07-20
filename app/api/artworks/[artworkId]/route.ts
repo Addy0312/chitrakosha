@@ -10,7 +10,8 @@ export const dynamic = 'force-dynamic';
 const updateArtworkSchema = z.object({
   title: z.string().min(1, "Title is required").max(200, "Title must be less than 200 characters").optional(),
   description: z.string().min(1, "Description is required").max(2000, "Description must be less than 2000 characters").optional(),
-  imageUrl: z.string().url("Please provide a valid image URL").optional(),
+  imageUrl: z.string().min(1, "Please provide an image URL").optional(),
+  images: z.array(z.string()).optional(),
   price: z.number().positive("Price must be a positive number").optional(),
   status: z.enum(['FOR_SALE', 'IN_AUCTION', 'SOLD']).optional(),
 });

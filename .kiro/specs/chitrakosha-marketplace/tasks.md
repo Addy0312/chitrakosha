@@ -45,7 +45,7 @@
   - Create validation and error handling
   - _Requirements: 1.6_
 
-- [ ] 3. Artist Onboarding System
+- [x] 3. Artist Onboarding System
 
   - Implement the complete artist application and approval process
   - _Requirements: 2.1, 2.2_
@@ -76,7 +76,7 @@
   - Add validation and error handling
   - _Requirements: 2.4, 2.5, 2.6_
 
-- [ ] 4.2 Implement Image Upload System
+- [x] 4.2 Implement Image Upload System
 
   - Create cloud storage integration for artwork images
   - Add multi-image upload functionality

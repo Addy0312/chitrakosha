@@ -15,6 +15,8 @@ import { toast } from 'sonner';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { FileUpload } from '@/components/ui/file-upload';
+import { MultiImageUpload } from '@/components/ui/multi-image-upload';
 
 // Define types
 interface Artwork {
@@ -22,6 +24,7 @@ interface Artwork {
   title: string;
   description: string;
   imageUrl: string;
+  images?: string[];
   price: number;
   status: 'FOR_SALE' | 'IN_AUCTION' | 'SOLD';
   createdAt: string;
@@ -48,7 +51,11 @@ export default function DashboardPage() {
     price: '',
   });
   
+  const [newArtworkFile, setNewArtworkFile] = useState<File | null>(null);
+  const [newArtworkImages, setNewArtworkImages] = useState<File[]>([]);
   const [editingArtwork, setEditingArtwork] = useState<Artwork | null>(null);
+  const [editingArtworkFile, setEditingArtworkFile] = useState<File | null>(null);
+  const [editingArtworkImages, setEditingArtworkImages] = useState<File[]>([]);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
@@ -60,12 +67,23 @@ export default function DashboardPage() {
   
   const [loadingApplication, setLoadingApplication] = useState(true);
   
-  // Fetch artist application status
+  // State to track if user is actually an artist (from database)
+  const [userIsArtist, setUserIsArtist] = useState<boolean | null>(null);
+
+  // Fetch artist application status and user status
   useEffect(() => {
     const fetchApplicationStatus = async () => {
       if (sessionStatus === 'loading' || !session?.user?.id) return;
       
       try {
+        // Check user's current artist status from database
+        const userResponse = await fetch(`/api/users/${session.user.id}`);
+        if (userResponse.ok) {
+          const userData = await userResponse.json();
+          setUserIsArtist(userData.isArtist);
+        }
+
+        // Check application status
         const response = await fetch('/api/users/artist-application');
         if (response.ok) {
           const data = await response.json();
@@ -87,7 +105,9 @@ export default function DashboardPage() {
   // Fetch artworks for artists
   useEffect(() => {
     const fetchArtworks = async () => {
-      if (sessionStatus === 'loading' || !session?.user?.id || !session.user.isArtist) {
+      const currentIsArtist = userIsArtist ?? session?.user?.isArtist;
+      
+      if (sessionStatus === 'loading' || !session?.user?.id || !currentIsArtist) {
         setLoadingArtworks(false);
         return;
       }
@@ -110,13 +130,46 @@ export default function DashboardPage() {
     };
     
     fetchArtworks();
-  }, [session, sessionStatus]);
+  }, [session, sessionStatus, userIsArtist]);
+
+  const uploadFile = async (file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    const response = await fetch('/api/upload', {
+      method: 'POST',
+      body: formData,
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to upload file');
+    }
+    
+    const data = await response.json();
+    return data.url;
+  };
 
   const handleAddArtwork = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     
     try {
+      let imageUrl = newArtwork.imageUrl;
+      
+      // Upload primary image file if one is selected
+      if (newArtworkFile) {
+        imageUrl = await uploadFile(newArtworkFile);
+      }
+      
+      if (!imageUrl) {
+        throw new Error('Please provide a primary image for your artwork');
+      }
+
+      // Upload additional images
+      const additionalImageUrls = await Promise.all(
+        newArtworkImages.map(file => uploadFile(file))
+      );
+
       const response = await fetch('/api/artworks', {
         method: 'POST',
         headers: {
@@ -125,7 +178,8 @@ export default function DashboardPage() {
         body: JSON.stringify({
           title: newArtwork.title,
           description: newArtwork.description,
-          imageUrl: newArtwork.imageUrl,
+          imageUrl: imageUrl,
+          images: additionalImageUrls,
           price: parseFloat(newArtwork.price),
         }),
       });
@@ -138,6 +192,8 @@ export default function DashboardPage() {
       const data = await response.json();
       setArtworks([data.artwork, ...artworks]);
       setNewArtwork({ title: '', description: '', imageUrl: '', price: '' });
+      setNewArtworkFile(null);
+      setNewArtworkImages([]);
       toast.success('Artwork created successfully!');
     } catch (error: any) {
       toast.error(`Error: ${error.message}`);
@@ -159,6 +215,22 @@ export default function DashboardPage() {
     setIsSubmitting(true);
     
     try {
+      let imageUrl = editingArtwork.imageUrl;
+      
+      // Upload new file if one is selected
+      if (editingArtworkFile) {
+        imageUrl = await uploadFile(editingArtworkFile);
+      }
+
+      // Upload additional images if any new ones are selected
+      let additionalImageUrls = editingArtwork.images || [];
+      if (editingArtworkImages.length > 0) {
+        const newImageUrls = await Promise.all(
+          editingArtworkImages.map(file => uploadFile(file))
+        );
+        additionalImageUrls = newImageUrls;
+      }
+
       const response = await fetch(`/api/artworks/${editingArtwork.id}`, {
         method: 'PUT',
         headers: {
@@ -167,7 +239,8 @@ export default function DashboardPage() {
         body: JSON.stringify({
           title: editingArtwork.title,
           description: editingArtwork.description,
-          imageUrl: editingArtwork.imageUrl,
+          imageUrl: imageUrl,
+          images: additionalImageUrls,
           price: editingArtwork.price,
         }),
       });
@@ -183,6 +256,8 @@ export default function DashboardPage() {
       ));
       setIsEditDialogOpen(false);
       setEditingArtwork(null);
+      setEditingArtworkFile(null);
+      setEditingArtworkImages([]);
       toast.success('Artwork updated successfully!');
     } catch (error: any) {
       toast.error(`Error: ${error.message}`);
@@ -225,9 +300,31 @@ export default function DashboardPage() {
   };
 
   // Check if user is an artist or has a pending application
-  const isArtist = session?.user?.isArtist;
+  const isArtist = userIsArtist ?? session?.user?.isArtist;
   const hasPendingApplication = artistApplication?.status === 'PENDING';
   const hasRejectedApplication = artistApplication?.status === 'REJECTED';
+
+  // Debug logging
+  console.log('Dashboard Debug:', {
+    sessionStatus,
+    userId: session?.user?.id,
+    isArtist,
+    userIsArtist,
+    artistApplication,
+    sessionUser: session?.user
+  });
+
+  // If session is loading, show loading state
+  if (sessionStatus === 'loading') {
+    return (
+      <div className="container mx-auto p-4">
+        <div className="flex justify-center items-center h-64">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <span className="ml-2">Loading...</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto p-4">
@@ -322,14 +419,23 @@ export default function DashboardPage() {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="imageUrl">Image URL</Label>
-                  <Input
-                    id="imageUrl"
-                    type="url"
-                    value={newArtwork.imageUrl}
-                    onChange={(e) => setNewArtwork({ ...newArtwork, imageUrl: e.target.value })}
-                    required
+                  <FileUpload
+                    onFileChange={(file) => setNewArtworkFile(file)}
+                    label="Primary Artwork Image"
                   />
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Upload the main image of your artwork (JPG, PNG, GIF, SVG - max 5MB)
+                  </p>
+                </div>
+                <div>
+                  <MultiImageUpload
+                    onImagesChange={(files) => setNewArtworkImages(files)}
+                    maxImages={4}
+                    label="Additional Images (Optional)"
+                  />
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Upload up to 4 additional images to showcase different angles or details
+                  </p>
                 </div>
                 <div>
                   <Label htmlFor="price">Price (₹)</Label>
@@ -474,14 +580,25 @@ export default function DashboardPage() {
                 />
               </div>
               <div>
-                <Label htmlFor="edit-imageUrl">Image URL</Label>
-                <Input
-                  id="edit-imageUrl"
-                  type="url"
-                  value={editingArtwork.imageUrl}
-                  onChange={(e) => setEditingArtwork({ ...editingArtwork, imageUrl: e.target.value })}
-                  required
+                <FileUpload
+                  onFileChange={(file) => setEditingArtworkFile(file)}
+                  currentImageUrl={editingArtwork.imageUrl}
+                  label="Update Primary Artwork Image"
                 />
+                <p className="text-sm text-muted-foreground mt-1">
+                  Upload a new primary image or keep the current one (JPG, PNG, GIF, SVG - max 5MB)
+                </p>
+              </div>
+              <div>
+                <MultiImageUpload
+                  onImagesChange={(files) => setEditingArtworkImages(files)}
+                  currentImages={editingArtwork.images || []}
+                  maxImages={4}
+                  label="Update Additional Images"
+                />
+                <p className="text-sm text-muted-foreground mt-1">
+                  Upload new additional images or keep existing ones
+                </p>
               </div>
               <div>
                 <Label htmlFor="edit-price">Price (₹)</Label>

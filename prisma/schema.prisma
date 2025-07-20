@@ -39,8 +39,9 @@ model Artwork {
   id          String    @id @default(cuid())
   title       String
   description String
-  imageUrl    String
-  price       Float // For direct sale
+  imageUrl    String    // Primary image for backward compatibility
+  images      String[]  // Additional images for gallery view
+  price       Float     // For direct sale
   status      ArtStatus @default(FOR_SALE) // e.g., FOR_SALE, IN_AUCTION, SOLD
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt

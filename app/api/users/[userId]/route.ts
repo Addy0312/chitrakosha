@@ -1,128 +1,115 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import prisma from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
-
-const prisma = new PrismaClient();
 
 export async function GET(
   req: Request,
   { params }: { params: { userId: string } }
 ) {
   try {
+    const { userId } = params;
+
+    // Check authentication
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Users can only access their own data (or admins can access any)
+    if (session.user.id !== userId) {
+      // Check if user is admin (you can implement admin check here)
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    // Get user data
     const user = await prisma.user.findUnique({
-      where: { id: params.userId },
-      select: { 
+      where: { id: userId },
+      select: {
         id: true,
         name: true,
         firstName: true,
         lastName: true,
         email: true,
+        image: true,
+        phone: true,
+        city: true,
         bio: true,
         isArtist: true,
-        image: true,
-        city: true,
-        phone: true,
         createdAt: true,
-        // Include artworks if the user is an artist
-        artworks: {
-          select: {
-            id: true,
-            title: true,
-            description: true,
-            imageUrl: true,
-            price: true,
-            status: true,
-            createdAt: true,
-          }
-        },
-        // Include purchased artworks (orders)
-        orders: {
-          where: {
-            status: 'COMPLETED'
-          },
-          select: {
-            id: true,
-            createdAt: true,
-            artwork: {
-              select: {
-                id: true,
-                title: true,
-                description: true,
-                imageUrl: true,
-                price: true,
-                artist: {
-                  select: {
-                    id: true,
-                    name: true
-                  }
-                }
-              }
-            }
-          }
-        },
-        // Include community memberships for activity
-        memberships: {
-          select: {
-            id: true,
-            community: {
-              select: {
-                id: true,
-                name: true
-              }
-            }
-          }
-        }
-      }
+        updatedAt: true,
+      },
     });
 
     if (!user) {
-      return new NextResponse("User not found", { status: 404 });
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
     return NextResponse.json(user);
   } catch (error) {
-    console.error("[USER_GET_ERROR]", error);
-    return new NextResponse("Internal Error", { status: 500 });
+    console.error('[GET_USER_ERROR]', error);
+    return NextResponse.json({ error: 'Failed to fetch user' }, { status: 500 });
   }
 }
 
-export async function PATCH(
+export async function PUT(
   req: Request,
   { params }: { params: { userId: string } }
 ) {
   try {
+    const { userId } = params;
+
+    // Check authentication
     const session = await getServerSession(authOptions);
-
-    if (!session || session.user.id !== params.userId) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    // Users can only update their own data
+    if (session.user.id !== userId) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    // Parse request body
     const body = await req.json();
-    const { name, firstName, lastName, bio, image, city, phone } = body;
+    const { name, firstName, lastName, phone, city, bio, image } = body;
 
-    if (!name && !bio && !image && !firstName && !lastName && !city && !phone) {
-      return new NextResponse("No fields to update", { status: 400 });
-    }
-
+    // Update user data
     const updatedUser = await prisma.user.update({
-      where: { id: params.userId },
+      where: { id: userId },
       data: {
-        ...(name && { name }),
-        ...(firstName && { firstName }),
-        ...(lastName && { lastName }),
-        ...(bio && { bio }),
-        ...(image && { image }),
-        ...(city && { city }),
-        ...(phone && { phone }),
+        ...(name !== undefined && { name }),
+        ...(firstName !== undefined && { firstName }),
+        ...(lastName !== undefined && { lastName }),
+        ...(phone !== undefined && { phone }),
+        ...(city !== undefined && { city }),
+        ...(bio !== undefined && { bio }),
+        ...(image !== undefined && { image }),
+      },
+      select: {
+        id: true,
+        name: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+        image: true,
+        phone: true,
+        city: true,
+        bio: true,
+        isArtist: true,
+        createdAt: true,
+        updatedAt: true,
       },
     });
 
-    return NextResponse.json(updatedUser);
+    return NextResponse.json({
+      message: 'User updated successfully',
+      user: updatedUser,
+    });
   } catch (error) {
-    console.error("[USER_PATCH_ERROR]", error);
-    return new NextResponse("Internal Error", { status: 500 });
+    console.error('[PUT_USER_ERROR]', error);
+    return NextResponse.json({ error: 'Failed to update user' }, { status: 500 });
   }
 }
