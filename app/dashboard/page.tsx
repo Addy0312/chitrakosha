@@ -17,6 +17,7 @@ import Image from 'next/image';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { FileUpload } from '@/components/ui/file-upload';
 import { MultiImageUpload } from '@/components/ui/multi-image-upload';
+import { ArtistStats } from '@/components/artist-stats';
 
 // Define types
 interface Artwork {
@@ -390,6 +391,19 @@ export default function DashboardPage() {
       {/* Only show artist features if the user is an artist */}
       {isArtist && (
         <>
+          {/* Artist Statistics */}
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle>Your Performance</CardTitle>
+              <CardDescription>
+                Track your sales, earnings, and artwork performance
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ArtistStats artistId={session?.user?.id || ''} />
+            </CardContent>
+          </Card>
+
           <Card className="mb-6">
             <CardHeader>
               <CardTitle>Upload New Artwork</CardTitle>
