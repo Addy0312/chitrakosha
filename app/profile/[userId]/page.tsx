@@ -303,7 +303,7 @@ export default function UserProfilePage() {
             </div>
           </div>
           
-          {userProfile.memberships.length > 0 && (
+          {userProfile.memberships?.length > 0 && (
             <div>
               <h3 className="text-lg font-semibold mb-2">Communities</h3>
               <div className="flex flex-wrap gap-2">
@@ -389,7 +389,7 @@ export default function UserProfilePage() {
               <CardDescription>Artworks purchased by {fullName}</CardDescription>
             </CardHeader>
             <CardContent>
-              {userProfile.orders.length > 0 ? (
+              {userProfile.orders?.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {userProfile.orders.map((order) => (
                     <Link href={`/artwork/${order.artwork.id}`} key={order.id}>
@@ -438,7 +438,7 @@ export default function UserProfilePage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {userProfile.orders.length > 0 && (
+                {userProfile.orders?.length > 0 && (
                   <div>
                     <h3 className="text-lg font-medium mb-2">Recent Purchases</h3>
                     <div className="space-y-2">
@@ -508,7 +508,7 @@ export default function UserProfilePage() {
                   </div>
                 )}
                 
-                {userProfile.memberships.length > 0 && (
+                {userProfile.memberships?.length > 0 && (
                   <div>
                     <h3 className="text-lg font-medium mb-2">Community Memberships</h3>
                     <div className="space-y-2">
@@ -536,7 +536,7 @@ export default function UserProfilePage() {
                   </div>
                 )}
                 
-                {userProfile.orders.length === 0 && 
+                {userProfile.orders?.length === 0 && 
                  (!userProfile.isArtist || userProfile.artworks.length === 0) && 
                  userProfile.memberships.length === 0 && (
                   <div className="text-center py-8">
