@@ -404,6 +404,7 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
 
+          {/* Upload New Artwork Section */}
           <Card className="mb-6">
             <CardHeader>
               <CardTitle>Upload New Artwork</CardTitle>
@@ -464,6 +465,44 @@ export default function DashboardPage() {
                 <Button type="submit" disabled={isSubmitting}>
                   {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   {isSubmitting ? 'Adding...' : 'Add Artwork'}
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+
+          {/* Auction Creation Section */}
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle>Create Auction</CardTitle>
+              <CardDescription>
+                Set up an auction for your artwork (beta)
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form className="space-y-4" onSubmit={e => { e.preventDefault(); alert('Auction creation coming soon!'); }}>
+                <div>
+                  <Label htmlFor="auction-artwork">Select Artwork</Label>
+                  <select id="auction-artwork" className="w-full border rounded p-2" required>
+                    <option value="">-- Select Artwork --</option>
+                    {artworks.filter(a => a.status === 'FOR_SALE').map(a => (
+                      <option key={a.id} value={a.id}>{a.title}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <Label htmlFor="auction-start">Start Time</Label>
+                  <Input id="auction-start" type="datetime-local" required />
+                </div>
+                <div>
+                  <Label htmlFor="auction-end">End Time</Label>
+                  <Input id="auction-end" type="datetime-local" required />
+                </div>
+                <div>
+                  <Label htmlFor="auction-price">Starting Price (₹)</Label>
+                  <Input id="auction-price" type="number" min="0" required />
+                </div>
+                <Button type="submit" disabled>
+                  Coming Soon
                 </Button>
               </form>
             </CardContent>
