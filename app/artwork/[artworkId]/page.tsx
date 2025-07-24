@@ -6,7 +6,8 @@ const RazorpayCheckout = dynamic(() => import("@/app/components/payments/Razorpa
 import { useParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
+// import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
+import ImageGallery from '@/components/ui/ImageGallery';
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
@@ -94,17 +95,7 @@ export default function ArtworkDetailPage() {
     <div className="container mx-auto px-4 py-12">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-12">
         <div>
-          <Carousel>
-            <CarouselContent>
-              {images.map((img, i) => (
-                <CarouselItem key={i}>
-                  <img src={img} alt={artwork.title} className="w-full h-96 object-contain rounded-lg bg-muted" />
-                </CarouselItem>
-              ))}
-            </CarouselContent>
-            <CarouselPrevious />
-            <CarouselNext />
-          </Carousel>
+          <ImageGallery images={images} alt={artwork.title} />
         </div>
         <div>
           <Card>
@@ -139,7 +130,7 @@ export default function ArtworkDetailPage() {
                 {success && <div className="text-success mt-2">Payment successful! Check your profile for details.</div>}
               </div>
               <div className="flex items-center gap-3">
-                <img src={artwork.artist.image || '/placeholder.svg'} alt={artwork.artist.name} className="w-10 h-10 rounded-full object-cover border" />
+                    <ResponsiveImage src={artwork.artist.image || '/placeholder.svg'} alt={artwork.artist.name} className="w-10 h-10 rounded-full object-cover border" />
                 <span className="font-medium">{artwork.artist.name}</span>
               </div>
             </CardContent>
@@ -157,7 +148,7 @@ export default function ArtworkDetailPage() {
               <Card key={a.id} className="group hover:shadow-card transition-all duration-300 hover:-translate-y-1">
                 <CardHeader className="p-0">
                   <div className="relative overflow-hidden rounded-t-lg">
-                    <img src={a.imageUrl} alt={a.title} className="w-full h-40 object-cover group-hover:scale-105 transition-transform duration-300" />
+                        <ResponsiveImage src={a.imageUrl} alt={a.title} className="w-full h-40 object-cover group-hover:scale-105 transition-transform duration-300" />
                     <Badge className="absolute top-4 left-4 bg-gradient-saffron">{a.category}</Badge>
                   </div>
                 </CardHeader>
@@ -174,3 +165,5 @@ export default function ArtworkDetailPage() {
     </div>
   );
 }
+
+import ResponsiveImage from '@/components/ui/ResponsiveImage';

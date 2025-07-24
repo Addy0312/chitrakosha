@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/db';
+import { deleteImageFromCloud } from '@/lib/services/cloud-delete';
+import { deleteImageFromCloud } from '@/lib/services/cloud-delete';
 import { z } from 'zod';
 
 export const dynamic = 'force-dynamic';
@@ -63,10 +65,10 @@ export async function PUT(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Get artwork to check ownership
+    // Get artwork to check ownership and current images
     const existingArtwork = await prisma.artwork.findUnique({
       where: { id: artworkId },
-      select: { artistId: true, status: true },
+      select: { artistId: true, status: true, imageUrl: true, images: true },
     });
 
     if (!existingArtwork) {
@@ -89,6 +91,21 @@ export async function PUT(
     // Parse and validate request body
     const body = await req.json();
     const validatedData = updateArtworkSchema.parse(body);
+
+    // If images are being replaced, delete old images from cloud storage
+    const newImages = validatedData.images;
+    const newImageUrl = validatedData.imageUrl;
+    const oldImages = [existingArtwork.imageUrl, ...(existingArtwork.images || [])].filter(Boolean);
+    const newAll = [newImageUrl, ...(newImages || [])].filter(Boolean);
+    const toDelete = oldImages.filter(img => img && !newAll.includes(img));
+    for (const imgUrl of toDelete) {
+      try {
+        const key = imgUrl.split('.amazonaws.com/')[1];
+        if (key) await deleteImageFromCloud(key);
+      } catch (err) {
+        console.error('[DELETE_IMAGE_ON_REPLACE_ERROR]', imgUrl, err);
+      }
+    }
 
     // Update artwork
     const updatedArtwork = await prisma.artwork.update({
@@ -136,12 +153,14 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Get artwork to check ownership and status
+    // Get artwork to check ownership, status, and images
     const existingArtwork = await prisma.artwork.findUnique({
       where: { id: artworkId },
       select: { 
         artistId: true, 
         status: true,
+        imageUrl: true,
+        images: true,
         auction: {
           select: { status: true }
         }
@@ -172,13 +191,24 @@ export async function DELETE(
       );
     }
 
-    // Delete artwork (this will cascade delete related auctions and bids)
+    // Delete images from cloud storage (ignore errors, but log them)
+    const allImages = [existingArtwork.imageUrl, ...(existingArtwork.images || [])].filter(Boolean);
+    for (const imgUrl of allImages) {
+      try {
+        // Extract S3 key from URL (assuming format: https://bucket.s3.amazonaws.com/folder/filename)
+        const key = imgUrl.split('.amazonaws.com/')[1];
+        if (key) await deleteImageFromCloud(key);
+      } catch (err) {
+        console.error('[DELETE_IMAGE_ERROR]', imgUrl, err);
+      }
+    }
+
     await prisma.artwork.delete({
       where: { id: artworkId },
     });
 
     return NextResponse.json({
-      message: 'Artwork deleted successfully',
+      message: 'Artwork and images deleted successfully',
     });
   } catch (error) {
     console.error('[DELETE_ARTWORK_ERROR]', error);

@@ -1,46 +1,33 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { writeFile, mkdir } from 'fs/promises';
-import { join } from 'path';
-import { v4 as uuidv4 } from 'uuid';
-import { existsSync } from 'fs';
+import { uploadImageToCloud } from '@/lib/services/cloud';
 
 export const dynamic = 'force-dynamic';
 
-async function processFile(file: File): Promise<string> {
+async function processFile(file: File, userId: string): Promise<string> {
   // Validate file type
   const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/svg+xml'];
   if (!validTypes.includes(file.type)) {
     throw new Error(`Invalid file type: ${file.type}`);
   }
-
   // Validate file size (max 5MB)
   if (file.size > 5 * 1024 * 1024) {
     throw new Error('File too large (max 5MB)');
   }
-
   const bytes = await file.arrayBuffer();
   const buffer = Buffer.from(bytes);
-
-  // Create unique filename
+  // Use userId and timestamp for unique filename
   const ext = file.name.split('.').pop();
-  const fileName = `${uuidv4()}.${ext}`;
-  
-  // In a production app, you would upload to cloud storage like S3
-  // For this implementation, we'll save to the public directory
-  const uploadDir = join(process.cwd(), 'public/uploads');
-  const filePath = join(uploadDir, fileName);
-  
-  // Ensure directory exists
-  if (!existsSync(uploadDir)) {
-    await mkdir(uploadDir, { recursive: true });
-  }
-  
-  await writeFile(filePath, buffer);
-  
-  // Return the URL to the uploaded file
-  return `/uploads/${fileName}`;
+  const fileName = `${userId}_${Date.now()}.${ext}`;
+  // Upload to cloud storage
+  const url = await uploadImageToCloud({
+    fileBuffer: buffer,
+    fileName,
+    contentType: file.type,
+    folder: 'artwork',
+  });
+  return url;
 }
 
 export async function POST(req: Request) {
@@ -63,14 +50,13 @@ export async function POST(req: Request) {
 
     // Handle single file upload (backward compatibility)
     if (singleFile && files.length <= 1) {
-      const url = await processFile(singleFile);
+      const url = await processFile(singleFile, session.user.id);
       return NextResponse.json({ url });
     }
 
     // Handle multiple file upload
-    const uploadPromises = files.map(file => processFile(file));
+    const uploadPromises = files.map(file => processFile(file, session.user.id));
     const urls = await Promise.all(uploadPromises);
-    
     return NextResponse.json({ urls });
   } catch (error: any) {
     console.error('[UPLOAD_ERROR]', error);
