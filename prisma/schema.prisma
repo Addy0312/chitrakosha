@@ -1,5 +1,6 @@
+// Prisma schema for MongoDB
 datasource db {
-  provider = "postgresql"
+  provider = "mongodb"
   url      = env("DATABASE_URL")
 }
 
@@ -8,14 +9,14 @@ generator client {
 }
 
 model User {
-  id            String    @id @default(cuid())
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
   name          String?
   firstName     String?
   lastName      String?
   email         String    @unique
   emailVerified DateTime?
-  image         String? // Profile Picture URL
-  password      String? // For credentials-based login
+  image         String?
+  password      String?
   phone         String?
   city          String?
   bio           String?
@@ -33,43 +34,42 @@ model User {
   sessions          Session[]
   artistApplication ArtistApplication?
   notifications     Notification[]
+  auctionsWon       Auction[] @relation("AuctionWinner")
 }
 
 model Artwork {
-  id          String    @id @default(cuid())
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
   title       String
   description String
-  imageUrl    String    // Primary image for backward compatibility
-  images      String[]  // Additional images for gallery view
-  price       Float     // For direct sale
-  status      ArtStatus @default(FOR_SALE) // e.g., FOR_SALE, IN_AUCTION, SOLD
+  imageUrl    String
+  images      String[]
+  price       Float
+  status      ArtStatus @default(FOR_SALE)
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
+// Prisma schema for MongoDB
+
   artistId String
-  artist   User   @relation(fields: [artistId], references: [id])
-
-  auction Auction?
-  order   Order?
-}
-
-enum ArtStatus {
-  FOR_SALE
-  IN_AUCTION
-  SOLD
+  artist   User?   @relation(fields: [artistId], references: [id])
+  auction  Auction?
+  order    Order?
 }
 
 model Auction {
-  id          String        @id @default(cuid())
-  startingBid Float
-  currentBid  Float
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
   startTime   DateTime
   endTime     DateTime
+  startingBid Float
+  currentBid  Float?
   status      AuctionStatus @default(ACTIVE)
+  winnerId    String?
+  winner      User?    @relation("AuctionWinner", fields: [winnerId], references: [id])
+  concludedAt DateTime?
+  artworkId   String   @unique
+  artwork     Artwork? @relation(fields: [artworkId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
-  artworkId String  @unique
-  artwork   Artwork @relation(fields: [artworkId], references: [id])
-  bids      Bid[]
+  bids        Bid[]
 }
 
 enum AuctionStatus {
@@ -78,84 +78,75 @@ enum AuctionStatus {
   CANCELLED
 }
 
-model Bid {
-  id        String   @id @default(cuid())
-  amount    Float
-  createdAt DateTime @default(now())
-
-  auctionId String
-  auction   Auction @relation(fields: [auctionId], references: [id])
-  userId    String
-  user      User    @relation(fields: [userId], references: [id])
-}
-
 model Order {
-  id        String      @id @default(cuid())
+  id        String      @id @default(auto()) @map("_id") @db.ObjectId
   amount    Float
-  paymentId String      @unique // From Razorpay/Stripe
+  paymentId String      @unique
   status    OrderStatus @default(PENDING)
   createdAt DateTime    @default(now())
 
   buyerId   String
-  buyer     User    @relation(fields: [buyerId], references: [id])
+  buyer     User? @relation(fields: [buyerId], references: [id])
+
   artworkId String  @unique
-  artwork   Artwork @relation(fields: [artworkId], references: [id])
+  artwork   Artwork? @relation(fields: [artworkId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
-enum OrderStatus {
-  PENDING
-  COMPLETED
-  FAILED
+model Bid {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  amount    Float
+  createdAt DateTime @default(now())
+
+  auctionId String
+  auction   Auction? @relation(fields: [auctionId], references: [id])
+  userId    String
+  user      User? @relation(fields: [userId], references: [id])
 }
 
 model Community {
-  id          String   @id @default(cuid())
-  name        String   @unique
-  description String
-  creatorId   String
-  createdAt   DateTime @default(now())
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  createdAt DateTime @default(now())
+  members   CommunityMember[]
+  posts     Post[]
+}
 
-  posts   Post[]
-  members CommunityMember[]
+model CommunityMember {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  communityId String
+  community   Community? @relation(fields: [communityId], references: [id])
+  userId      String
+  user        User? @relation(fields: [userId], references: [id])
+
+  @@unique([communityId, userId])
 }
 
 model Post {
-  id        String   @id @default(cuid())
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
   title     String
   content   Json?
   createdAt DateTime @default(now())
 
   authorId    String
-  author      User      @relation(fields: [authorId], references: [id])
+  author      User? @relation(fields: [authorId], references: [id])
   communityId String
-  community   Community @relation(fields: [communityId], references: [id])
+  community   Community? @relation(fields: [communityId], references: [id])
   comments    Comment[]
 }
 
 model Comment {
-  id        String   @id @default(cuid())
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
   text      String
   createdAt DateTime @default(now())
 
   authorId String
-  author   User   @relation(fields: [authorId], references: [id])
+  author   User? @relation(fields: [authorId], references: [id])
   postId   String
-  post     Post   @relation(fields: [postId], references: [id])
+  post     Post? @relation(fields: [postId], references: [id])
 }
 
-model CommunityMember {
-  id          String    @id @default(cuid())
-  communityId String
-  community   Community @relation(fields: [communityId], references: [id])
-  userId      String
-  user        User      @relation(fields: [userId], references: [id])
-
-  @@unique([communityId, userId])
-}
-
-// Models for NextAuth.js
 model Account {
-  id                String  @id @default(cuid())
+  id                String  @id @default(auto()) @map("_id") @db.ObjectId
   userId            String
   type              String
   provider          String
@@ -168,30 +159,55 @@ model Account {
   id_token          String?
   session_state     String?
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User? @relation(fields: [userId], references: [id])
 
   @@unique([provider, providerAccountId])
 }
 
 model Session {
-  id           String   @id @default(cuid())
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
   sessionToken String   @unique
   userId       String
   expires      DateTime
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user         User? @relation(fields: [userId], references: [id])
 }
 
 model ArtistApplication {
-  id           String                  @id @default(cuid())
+  id           String                  @id @default(auto()) @map("_id") @db.ObjectId
   userId       String                  @unique
-  user         User                    @relation(fields: [userId], references: [id])
+  user         User? @relation(fields: [userId], references: [id])
   artistName   String
   portfolioUrl String?
   bio          String
   status       ArtistApplicationStatus @default(PENDING)
-  metadata     Json?                   // For storing additional fields like artStyle, yearsOfExperience, portfolioSamples
+  metadata     Json?
   createdAt    DateTime                @default(now())
   updatedAt    DateTime                @updatedAt
+}
+
+model Notification {
+  id        String           @id @default(auto()) @map("_id") @db.ObjectId
+  type      NotificationType
+  title     String
+  message   String
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+  userId    String
+  user      User? @relation(fields: [userId], references: [id])
+  relatedEntityId String?
+  relatedEntityType String?
+}
+
+enum ArtStatus {
+  FOR_SALE
+  IN_AUCTION
+  SOLD
+}
+
+enum OrderStatus {
+  PENDING
+  COMPLETED
+  CANCELLED
 }
 
 enum ArtistApplicationStatus {
@@ -200,26 +216,12 @@ enum ArtistApplicationStatus {
   REJECTED
 }
 
-model Notification {
-  id        String           @id @default(cuid())
-  type      NotificationType
-  title     String
-  message   String
-  isRead    Boolean          @default(false)
-  createdAt DateTime         @default(now())
-  
-  userId    String
-  user      User             @relation(fields: [userId], references: [id])
-  
-  // Optional reference to related entities
-  relatedEntityId String?
-  relatedEntityType String?
-}
-
 enum NotificationType {
   ARTIST_APPLICATION_APPROVED
   ARTIST_APPLICATION_REJECTED
   ARTWORK_SOLD
   NEW_COMMENT
   SYSTEM_NOTIFICATION
+  OUTBID
+  AUCTION_RESULT
 }

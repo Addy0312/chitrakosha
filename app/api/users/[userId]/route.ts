@@ -12,19 +12,9 @@ export async function GET(
   try {
     const { userId } = params;
 
-    // Check authentication
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    // Public profile: no authentication required
 
-    // Users can only access their own data (or admins can access any)
-    if (session.user.id !== userId) {
-      // Check if user is admin (you can implement admin check here)
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    }
-
-    // Get user data
+    // Get user data with related info for profile page
     const user = await prisma.user.findUnique({
       where: { id: userId },
       select: {
@@ -39,7 +29,48 @@ export async function GET(
         bio: true,
         isArtist: true,
         createdAt: true,
-        updatedAt: true,
+        artworks: {
+          select: {
+            id: true,
+            title: true,
+            description: true,
+            imageUrl: true,
+            price: true,
+            status: true,
+            createdAt: true,
+          },
+        },
+        orders: {
+          select: {
+            id: true,
+            createdAt: true,
+            artwork: {
+              select: {
+                id: true,
+                title: true,
+                imageUrl: true,
+                price: true,
+                artist: {
+                  select: {
+                    id: true,
+                    name: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+        memberships: {
+          select: {
+            id: true,
+            community: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
       },
     });
 

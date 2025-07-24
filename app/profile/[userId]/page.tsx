@@ -341,7 +341,7 @@ export default function UserProfilePage() {
                 <CardTitle>Artworks by {fullName}</CardTitle>
               </CardHeader>
               <CardContent>
-                {userProfile.artworks.length > 0 ? (
+                {Array.isArray(userProfile.artworks) && userProfile.artworks.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {userProfile.artworks.map((artwork) => (
                       <Link href={`/artwork/${artwork.id}`} key={artwork.id}>
@@ -471,7 +471,7 @@ export default function UserProfilePage() {
                   </div>
                 )}
                 
-                {userProfile.isArtist && userProfile.artworks.length > 0 && (
+                {userProfile.isArtist && Array.isArray(userProfile.artworks) && userProfile.artworks.length > 0 && (
                   <div>
                     <h3 className="text-lg font-medium mb-2">Recently Added Artworks</h3>
                     <div className="space-y-2">
