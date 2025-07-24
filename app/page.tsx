@@ -1,6 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { ErrorBoundary } from '@/components/ui/error-boundary';
+import { DynamicImage } from '@/components/ui/dynamic-image';
+import { Skeleton } from '@/components/ui/skeleton';
+import React, { Suspense, lazy } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,7 +15,6 @@ import {
   ArrowRight
 } from 'lucide-react';
 
-export default function Home() {
   const [activeFilter, setActiveFilter] = useState('All');
   const [timeLeft, setTimeLeft] = useState({ days: 2, hours: 14, minutes: 32, seconds: 45 });
 
@@ -121,8 +124,11 @@ export default function Home() {
     return () => clearInterval(timer);
   }, []);
 
+  const AuctionSection = React.useMemo(() => lazy(() => import('./_AuctionSection')), []);
+
   return (
-    <>
+    <ErrorBoundary>
+      <>
       {/* Hero Section */}
       <section className="relative py-20 bg-gradient-warm overflow-hidden">
         <div className="container mx-auto px-4 text-center">
@@ -177,41 +183,49 @@ export default function Home() {
 
           {/* Artworks Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredArtworks.map((artwork) => (
-              <Card key={artwork.id} className="group hover:shadow-card transition-all duration-300 hover:-translate-y-1">
-                <CardHeader className="p-0">
-                  <div className="relative overflow-hidden rounded-t-lg">
-                    <img
-                      src={artwork.image}
-                      alt={artwork.title}
-                      className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                    <div className="absolute top-4 right-4">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="bg-white/80 hover:bg-white"
-                      >
-                        {/* <Heart className={`w-4 h-4 ${artwork.liked ? 'fill-red-500 text-red-500' : ''}`} /> */}
+            {filteredArtworks.length === 0 ? (
+              Array.from({ length: 6 }).map((_, i) => (
+                <Skeleton key={i} className="h-72 w-full" />
+              ))
+            ) : (
+              filteredArtworks.map((artwork) => (
+                <Card key={artwork.id} className="group hover:shadow-card transition-all duration-300 hover:-translate-y-1">
+                  <CardHeader className="p-0">
+                    <div className="relative overflow-hidden rounded-t-lg">
+                      <DynamicImage
+                        src={artwork.image}
+                        alt={artwork.title}
+                        width={400}
+                        height={192}
+                        className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                      <div className="absolute top-4 right-4">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="bg-white/80 hover:bg-white"
+                        >
+                          {/* <Heart className={`w-4 h-4 ${artwork.liked ? 'fill-red-500 text-red-500' : ''}`} /> */}
+                        </Button>
+                      </div>
+                      <Badge className="absolute top-4 left-4 bg-gradient-saffron">
+                        {artwork.category}
+                      </Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="p-6">
+                    <CardTitle className="text-lg mb-2">{artwork.title}</CardTitle>
+                    <p className="text-muted-foreground mb-4">by {artwork.artist}</p>
+                    <div className="flex items-center justify-between">
+                      <span className="text-2xl font-bold text-foreground">{artwork.price}</span>
+                      <Button size="sm" className="bg-gradient-saffron hover:opacity-90">
+                        Add to Cart
                       </Button>
                     </div>
-                    <Badge className="absolute top-4 left-4 bg-gradient-saffron">
-                      {artwork.category}
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent className="p-6">
-                  <CardTitle className="text-lg mb-2">{artwork.title}</CardTitle>
-                  <p className="text-muted-foreground mb-4">by {artwork.artist}</p>
-                  <div className="flex items-center justify-between">
-                    <span className="text-2xl font-bold text-foreground">{artwork.price}</span>
-                    <Button size="sm" className="bg-gradient-saffron hover:opacity-90">
-                      Add to Cart
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                  </CardContent>
+                </Card>
+              ))
+            )}
           </div>
         </div>
       </section>
@@ -240,54 +254,10 @@ export default function Home() {
         <div className="absolute bottom-10 right-20 w-16 h-16 bg-white/10 rounded-full blur-xl"></div>
       </section>
 
-      {/* Featured Auctions Section */}
-      <section className="py-16 bg-background">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h3 className="text-3xl font-bold text-foreground mb-4">Featured Auctions</h3>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
-              Bid on exclusive artworks and discover unique pieces from renowned artists
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {auctions.map((auction) => (
-              <Card key={auction.id} className="group hover:shadow-card transition-all duration-300 hover:-translate-y-1">
-                <CardHeader className="p-0">
-                  <div className="relative overflow-hidden rounded-t-lg">
-                    <img
-                      src={auction.image}
-                      alt={auction.title}
-                      className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                    <Badge className="absolute top-4 left-4 bg-gradient-purple">
-                      <Clock className="w-3 h-3 mr-1" />
-                      {auction.timeLeft}
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent className="p-6">
-                  <CardTitle className="text-lg mb-2">{auction.title}</CardTitle>
-                  <p className="text-muted-foreground mb-4">by {auction.artist}</p>
-                  <div className="space-y-2 mb-4">
-                    <div className="flex justify-between">
-                      <span className="text-sm text-muted-foreground">Current Bid</span>
-                      <span className="font-semibold">{auction.currentBid}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm text-muted-foreground">Reserve Price</span>
-                      <span className="font-semibold">{auction.reservePrice}</span>
-                    </div>
-                  </div>
-                  <Button className="w-full bg-gradient-purple hover:opacity-90">
-                    Place Bid
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* Featured Auctions Section (code split) */}
+      <Suspense fallback={<div className="py-16 bg-background"><div className="container mx-auto px-4"><Skeleton className="h-72 w-full mb-4" /><Skeleton className="h-72 w-full mb-4" /><Skeleton className="h-72 w-full" /></div></div>}>
+        <AuctionSection auctions={auctions} />
+      </Suspense>
 
       {/* Join the Community Section */}
       <section className="py-16 bg-gradient-warm">
@@ -318,6 +288,7 @@ export default function Home() {
           </div>
         </div>
       </section>
-    </>
+      </>
+    </ErrorBoundary>
   );
 }

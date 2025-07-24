@@ -1,0 +1,16 @@
+{
+  "name": "Chitrakosha Marketplace",
+  "short_name": "Chitrakosha",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fff8e1",
+  "theme_color": "#ffb300",
+  "description": "A vibrant Indian art marketplace.",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "48x48",
+      "type": "image/x-icon"
+    }
+  ]
+}

@@ -1,12 +1,13 @@
 'use client';
 
+
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/ui/theme-provider";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 import { Toaster } from "@/components/ui/sonner";
-
+import { useEffect } from "react";
 import { SessionProvider } from 'next-auth/react';
 import { metadata } from "./metadata";
 
@@ -17,6 +18,11 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  useEffect(() => {
+    if (typeof window !== "undefined" && "serviceWorker" in navigator) {
+      navigator.serviceWorker.register("/service-worker.js");
+    }
+  }, []);
   return (
     <html lang="en">
       <body className={inter.className}>

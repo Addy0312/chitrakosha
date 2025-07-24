@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import ResponsiveImage from '@/components/ui/ResponsiveImage';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { MapPin, Mail, Phone, Clock } from 'lucide-react';
@@ -213,7 +214,7 @@ export default function UserProfilePage() {
       : (userProfile.firstName || userProfile.lastName || 'User'));
 
   return (
-    <div className="container mx-auto p-4">
+    <div className="container mx-auto px-2 sm:px-4 py-4 md:py-8 lg:py-12">
       <Card className="mb-6">
         <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
           <div className="relative group">
@@ -342,15 +343,16 @@ export default function UserProfilePage() {
               </CardHeader>
               <CardContent>
                 {Array.isArray(userProfile.artworks) && userProfile.artworks.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                     {userProfile.artworks.map((artwork) => (
                       <Link href={`/artwork/${artwork.id}`} key={artwork.id}>
                         <Card className="overflow-hidden h-full hover:shadow-md transition-shadow">
                           <div className="relative h-48 w-full">
                             <img 
+                            <ResponsiveImage 
                               src={artwork.imageUrl} 
                               alt={artwork.title} 
-                              className="w-full h-full object-cover"
+                              className="w-full h-full object-cover rounded"
                             />
                             <div className="absolute bottom-2 right-2">
                               <Badge variant={artwork.status === 'SOLD' ? 'destructive' : 'secondary'}>
@@ -396,10 +398,11 @@ export default function UserProfilePage() {
                       <Card className="overflow-hidden h-full hover:shadow-md transition-shadow">
                         <div className="relative h-48 w-full">
                           <img 
-                            src={order.artwork.imageUrl} 
-                            alt={order.artwork.title} 
-                            className="w-full h-full object-cover"
-                          />
+                            <ResponsiveImage 
+                              src={order.artwork.imageUrl} 
+                              alt={order.artwork.title} 
+                              className="w-full h-full object-cover"
+                            />
                         </div>
                         <CardContent className="p-4">
                           <h4 className="font-semibold truncate">{order.artwork.title}</h4>
