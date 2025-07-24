@@ -3,7 +3,6 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/db';
 import { deleteImageFromCloud } from '@/lib/services/cloud-delete';
-import { deleteImageFromCloud } from '@/lib/services/cloud-delete';
 import { z } from 'zod';
 
 export const dynamic = 'force-dynamic';

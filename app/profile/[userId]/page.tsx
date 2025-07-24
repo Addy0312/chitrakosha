@@ -348,7 +348,6 @@ export default function UserProfilePage() {
                       <Link href={`/artwork/${artwork.id}`} key={artwork.id}>
                         <Card className="overflow-hidden h-full hover:shadow-md transition-shadow">
                           <div className="relative h-48 w-full">
-                            <img 
                             <ResponsiveImage 
                               src={artwork.imageUrl} 
                               alt={artwork.title} 
@@ -397,12 +396,11 @@ export default function UserProfilePage() {
                     <Link href={`/artwork/${order.artwork.id}`} key={order.id}>
                       <Card className="overflow-hidden h-full hover:shadow-md transition-shadow">
                         <div className="relative h-48 w-full">
-                          <img 
-                            <ResponsiveImage 
-                              src={order.artwork.imageUrl} 
-                              alt={order.artwork.title} 
-                              className="w-full h-full object-cover"
-                            />
+                          <ResponsiveImage 
+                            src={order.artwork.imageUrl} 
+                            alt={order.artwork.title} 
+                            className="w-full h-full object-cover"
+                          />
                         </div>
                         <CardContent className="p-4">
                           <h4 className="font-semibold truncate">{order.artwork.title}</h4>

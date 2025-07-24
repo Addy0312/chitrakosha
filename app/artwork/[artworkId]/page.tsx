@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
-const RazorpayCheckout = dynamic(() => import("@/app/components/payments/RazorpayCheckout"), { ssr: false });
+const RazorpayCheckout = dynamic(() => import("@/components/payments/RazorpayCheckout"), { ssr: false });
 import { useParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";

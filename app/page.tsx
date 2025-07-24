@@ -1,20 +1,15 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense, lazy } from 'react';
 import { ErrorBoundary } from '@/components/ui/error-boundary';
 import { DynamicImage } from '@/components/ui/dynamic-image';
 import { Skeleton } from '@/components/ui/skeleton';
-import React, { Suspense, lazy } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  Clock,
-  Users,
-  Filter,
-  ArrowRight
-} from 'lucide-react';
+import { Clock, Users, Filter, ArrowRight } from 'lucide-react';
 
+export default function Home() {
   const [activeFilter, setActiveFilter] = useState('All');
   const [timeLeft, setTimeLeft] = useState({ days: 2, hours: 14, minutes: 32, seconds: 45 });
 
@@ -124,7 +119,7 @@ import {
     return () => clearInterval(timer);
   }, []);
 
-  const AuctionSection = React.useMemo(() => lazy(() => import('./_AuctionSection')), []);
+  const AuctionSection = lazy(() => import('./_AuctionSection'));
 
   return (
     <ErrorBoundary>
