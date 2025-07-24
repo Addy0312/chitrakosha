@@ -106,7 +106,9 @@ model Bid {
 model Community {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   name      String
+  description String
   createdAt DateTime @default(now())
+  creatorId String
   members   CommunityMember[]
   posts     Post[]
 }
