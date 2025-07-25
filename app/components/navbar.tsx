@@ -33,7 +33,7 @@ export function Navbar() {
           <nav className="hidden md:flex items-center space-x-8">
             <Link href="/" className="text-foreground hover:text-primary transition-colors">Home</Link>
             <Link href="/explore" className="text-foreground hover:text-primary transition-colors">Explore</Link>
-            <Link href="/sell" className="text-foreground hover:text-primary transition-colors">Sell Art</Link>
+            <Link href="/sell-art" className="text-foreground hover:text-primary transition-colors">Sell Art</Link>
             <Link href="/commission" className="text-foreground hover:text-primary transition-colors">Commission</Link>
             <Link href="/auctions" className="text-foreground hover:text-primary transition-colors">Auctions</Link>
             <Link href="/community" className="text-foreground hover:text-primary transition-colors">Community</Link>
@@ -88,7 +88,7 @@ export function Navbar() {
             <div className="flex flex-col space-y-4">
               <Link href="/" className="text-foreground hover:text-primary transition-colors">Home</Link>
               <Link href="/explore" className="text-foreground hover:text-primary transition-colors">Explore</Link>
-              <Link href="/sell" className="text-foreground hover:text-primary transition-colors">Sell Art</Link>
+              <Link href="/sell-art" className="text-foreground hover:text-primary transition-colors">Sell Art</Link>
               <Link href="/commission" className="text-foreground hover:text-primary transition-colors">Commission</Link>
               <Link href="/auctions" className="text-foreground hover:text-primary transition-colors">Auctions</Link>
               <Link href="/community" className="text-foreground hover:text-primary transition-colors">Community</Link>
