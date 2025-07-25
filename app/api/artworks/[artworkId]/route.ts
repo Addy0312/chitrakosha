@@ -67,7 +67,7 @@ export async function PUT(
     // Get artwork to check ownership and current images
     const existingArtwork = await prisma.artwork.findUnique({
       where: { id: artworkId },
-      select: { artistId: true, status: true, imageUrl: true, images: true },
+    select: { artistId: true, status: true, imageUrl: true },
     });
 
     if (!existingArtwork) {
@@ -94,7 +94,7 @@ export async function PUT(
     // If images are being replaced, delete old images from cloud storage
     const newImages = validatedData.images;
     const newImageUrl = validatedData.imageUrl;
-    const oldImages = [existingArtwork.imageUrl, ...(existingArtwork.images || [])].filter(Boolean);
+    const oldImages = [existingArtwork.imageUrl].filter(Boolean);
     const newAll = [newImageUrl, ...(newImages || [])].filter(Boolean);
     const toDelete = oldImages.filter(img => img && !newAll.includes(img));
     for (const imgUrl of toDelete) {
