@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import prisma from '@/lib/db';
+import { OrderStatus } from '@/lib/order-status';
 
 export async function POST(req: NextRequest) {
   try {
@@ -17,7 +18,7 @@ export async function POST(req: NextRequest) {
       // Mark order as failed
       await prisma.order.update({
         where: { id: orderId },
-        data: { status: 'FAILED' },
+        data: { status: OrderStatus.CANCELLED }, // Use CANCELLED for failed payments
       });
       return NextResponse.json({ error: 'Invalid signature.' }, { status: 400 });
     }

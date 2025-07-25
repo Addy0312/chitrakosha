@@ -1,4 +1,6 @@
+
 import prisma from '@/lib/db';
+import { NotificationType } from '@prisma/client';
 
 export async function createNotification({
   userId,
@@ -9,7 +11,7 @@ export async function createNotification({
   relatedEntityType,
 }: {
   userId: string;
-  type: string;
+  type: NotificationType;
   title: string;
   message: string;
   relatedEntityId?: string;

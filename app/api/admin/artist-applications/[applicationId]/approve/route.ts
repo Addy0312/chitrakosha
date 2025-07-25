@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/db';
 import { createNotification } from '@/lib/services/notification';
+import { NotificationType } from '@prisma/client';
 
 export const dynamic = 'force-dynamic';
 
@@ -80,7 +81,7 @@ export async function POST(
     // Create notification for the user
     await createNotification({
       userId: application.userId,
-      type: 'ARTIST_APPLICATION_APPROVED',
+      type: NotificationType.ARTIST_APPLICATION_APPROVED,
       title: 'Artist Application Approved',
       message: 'Congratulations! Your artist application has been approved. You can now upload and sell your artwork on Chitrakosha.',
       relatedEntityId: applicationId,

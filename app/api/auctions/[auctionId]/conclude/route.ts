@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/db';
 import { createNotification } from '@/lib/services/notifications';
+import { NotificationType } from '@prisma/client';
 
 // POST /api/auctions/[auctionId]/conclude
 export async function POST(
@@ -37,7 +38,6 @@ export async function POST(
     where: { id: auctionId },
     data: {
       status: 'ENDED',
-      // @ts-expect-error: winnerId is present in DB but not in Prisma types
       winnerId: winnerId || undefined,
       concludedAt: new Date(),
     },
@@ -66,7 +66,7 @@ export async function POST(
   if (winnerId) {
     await createNotification({
       userId: winnerId,
-      type: 'AUCTION_RESULT',
+      type: NotificationType.AUCTION_RESULT,
       title: 'You won the auction!',
       message: `Congratulations! You won the auction for ${auction.artwork?.title || 'an artwork'}.`,
       relatedEntityId: auctionId,
@@ -79,7 +79,7 @@ export async function POST(
     if (bid.userId && bid.userId !== winnerId && !notified.has(bid.userId)) {
       await createNotification({
         userId: bid.userId,
-        type: 'AUCTION_RESULT',
+        type: NotificationType.AUCTION_RESULT,
         title: 'Auction ended',
         message: `The auction for ${auction.artwork?.title || 'an artwork'} has ended.`,
         relatedEntityId: auctionId,

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import prisma from '@/lib/db';
+import { OrderStatus } from '@/lib/order-status';
 
 export async function POST(req: NextRequest) {
   const secret = process.env.RAZORPAY_WEBHOOK_SECRET!;
@@ -21,13 +22,13 @@ export async function POST(req: NextRequest) {
       // Update order/payment status in DB
       await prisma.order.updateMany({
         where: { paymentId: event.payload.payment.entity.id },
-        data: { status: 'COMPLETED' },
+        data: { status: OrderStatus.COMPLETED },
       });
       break;
     case 'payment.failed':
       await prisma.order.updateMany({
         where: { paymentId: event.payload.payment.entity.id },
-        data: { status: 'FAILED' },
+        data: { status: OrderStatus.CANCELLED }, // Use CANCELLED for failed payments
       });
       break;
     // Add more event types as needed

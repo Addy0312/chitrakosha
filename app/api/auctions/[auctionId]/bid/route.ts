@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/db';
 import { getServerSession } from 'next-auth';
 import { createNotification } from '@/lib/services/notifications';
+import { NotificationType } from '@prisma/client';
 
 export async function POST(req: NextRequest, { params }: { params: { auctionId: string } }) {
   const { auctionId } = params;
@@ -33,7 +34,7 @@ export async function POST(req: NextRequest, { params }: { params: { auctionId: 
   if (prevHighestBid && prevHighestBid.userId !== session.user.id) {
     await createNotification({
       userId: prevHighestBid.userId,
-      type: 'OUTBID',
+      type: NotificationType.OUTBID,
       title: 'You have been outbid!',
       message: `Your bid was surpassed in auction ${auctionId}.`,
       relatedEntityId: auctionId,

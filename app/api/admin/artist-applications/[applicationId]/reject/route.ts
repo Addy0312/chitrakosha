@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/db';
 import { createNotification } from '@/lib/services/notification';
+import { NotificationType } from '@prisma/client';
 
 export const dynamic = 'force-dynamic';
 
@@ -70,7 +71,7 @@ export async function POST(
     // Create notification for the user
     await createNotification({
       userId: application.userId,
-      type: 'ARTIST_APPLICATION_REJECTED',
+      type: NotificationType.ARTIST_APPLICATION_REJECTED,
       title: 'Artist Application Not Approved',
       message: 'Unfortunately, your artist application was not approved at this time. You may submit a new application with additional portfolio samples.',
       relatedEntityId: applicationId,

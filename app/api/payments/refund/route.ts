@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Razorpay from 'razorpay';
+
 import prisma from '@/lib/db';
+import { OrderStatus } from '@/lib/order-status';
 
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID!,
@@ -18,7 +20,7 @@ export async function POST(req: NextRequest) {
     // Update order status in DB
     await prisma.order.updateMany({
       where: { paymentId },
-      data: { status: 'REFUNDED' },
+      data: { status: OrderStatus.REFUNDED },
     });
     return NextResponse.json({ success: true, refund });
   } catch (error: any) {
