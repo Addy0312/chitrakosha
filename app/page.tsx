@@ -266,19 +266,23 @@ export default function Home() {
               Connect, collaborate, and grow with fellow art lovers. Share your journey, get inspired, and discover new opportunities.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button 
-                size="lg" 
-                className="bg-gradient-saffron hover:opacity-90 shadow-warm"
-              >
-                Join Now
-              </Button>
-              <Button 
-                size="lg" 
-                variant="outline"
-                className="border-2"
-              >
-                Learn More
-              </Button>
+              <a href="/community">
+                <Button 
+                  size="lg" 
+                  className="bg-gradient-saffron hover:opacity-90 shadow-warm w-full sm:w-auto"
+                >
+                  Join Now
+                </Button>
+              </a>
+              <a href="/community">
+                <Button 
+                  size="lg" 
+                  variant="outline"
+                  className="border-2 w-full sm:w-auto"
+                >
+                  Learn More
+                </Button>
+              </a>
             </div>
           </div>
         </div>
