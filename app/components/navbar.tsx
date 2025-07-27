@@ -8,8 +8,8 @@ import {
   X,
   Search,
   Heart,
-  ShoppingCart,
 } from 'lucide-react';
+import { CartIcon } from './cart-icon';
 import { ModeToggle } from '@/components/mode-toggle';
 import { useSession, signOut } from 'next-auth/react';
 import { NotificationDropdown } from '@/components/notifications';
@@ -46,9 +46,7 @@ export function Navbar() {
             <Button variant="ghost" size="icon">
               <Heart className="w-5 h-5" />
             </Button>
-            <Button variant="ghost" size="icon">
-              <ShoppingCart className="w-5 h-5" />
-            </Button>
+            <CartIcon />
             {session ? (
               <>
                 {/* Notification dropdown for authenticated users */}

@@ -12,6 +12,33 @@ import { Clock, Users, Filter, ArrowRight } from 'lucide-react';
 export default function Home() {
   const [activeFilter, setActiveFilter] = useState('All');
   const [timeLeft, setTimeLeft] = useState({ days: 2, hours: 14, minutes: 32, seconds: 45 });
+  const [cart, setCart] = useState<any[]>([]);
+  const [cartMessage, setCartMessage] = useState<string | null>(null);
+  // Load cart from localStorage on mount
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const storedCart = localStorage.getItem('cart');
+      if (storedCart) setCart(JSON.parse(storedCart));
+    }
+  }, []);
+
+  // Save cart to localStorage when it changes
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('cart', JSON.stringify(cart));
+    }
+  }, [cart]);
+
+  function handleAddToCart(artwork: any) {
+    if (cart.some(item => item.id === artwork.id)) {
+      setCartMessage('Artwork already in cart');
+      setTimeout(() => setCartMessage(null), 1500);
+      return;
+    }
+    setCart([...cart, artwork]);
+    setCartMessage('Added to cart!');
+    setTimeout(() => setCartMessage(null), 1500);
+  }
 
   // Mock data
   const artworks = [
@@ -213,9 +240,15 @@ export default function Home() {
                     <p className="text-muted-foreground mb-4">by {artwork.artist}</p>
                     <div className="flex items-center justify-between">
                       <span className="text-2xl font-bold text-foreground">{artwork.price}</span>
-                      <Button size="sm" className="bg-gradient-saffron hover:opacity-90">
+                      <Button size="sm" className="bg-gradient-saffron hover:opacity-90" onClick={() => handleAddToCart(artwork)}>
                         Add to Cart
                       </Button>
+      {/* Cart feedback message */}
+      {cartMessage && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-primary text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-fade-in">
+          {cartMessage}
+        </div>
+      )}
                     </div>
                   </CardContent>
                 </Card>
