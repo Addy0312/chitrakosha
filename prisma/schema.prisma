@@ -1,3 +1,24 @@
+model Commission {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  email       String
+  description String
+  budget      String?
+  status      CommissionStatus @default(PENDING)
+  createdAt   DateTime @default(now())
+
+  userId      String?
+  artistId    String?
+  user        User? @relation("UserCommissions", fields: [userId], references: [id])
+  artist      User? @relation("CommissionArtist", fields: [artistId], references: [id])
+}
+
+enum CommissionStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  COMPLETED
+}
 // Prisma schema for MongoDB
 datasource db {
   provider = "mongodb"
@@ -35,6 +56,9 @@ model User {
   artistApplication ArtistApplication?
   notifications     Notification[]
   auctionsWon       Auction[] @relation("AuctionWinner")
+
+  commissionsRequested Commission[] @relation("UserCommissions")
+  commissionsAssigned  Commission[] @relation("CommissionArtist")
 }
 
 model Artwork {
@@ -115,7 +139,7 @@ model Community {
 
 model CommunityMember {
   id          String    @id @default(auto()) @map("_id") @db.ObjectId
-  communityId String
+  artist      User? @relation("CommissionArtist", fields: [artistId], references: [id])
   community   Community? @relation(fields: [communityId], references: [id])
   userId      String
   user        User? @relation(fields: [userId], references: [id])

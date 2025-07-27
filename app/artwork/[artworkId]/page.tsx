@@ -102,12 +102,18 @@ export default function ArtworkDetailPage() {
             <CardHeader>
               <CardTitle className="text-3xl mb-2">{artwork.title}</CardTitle>
               <Badge className="mb-2 w-fit">{artwork.status}</Badge>
-              <p className="text-muted-foreground mb-4">by <Link href={`/profile/${artwork.artist.id}`} className="underline">{artwork.artist.name}</Link></p>
+              <p className="text-muted-foreground mb-4">
+                by {artwork.artist && artwork.artist.id ? (
+                  <Link href={`/profile/${artwork.artist.id}`} className="underline">{artwork.artist.name}</Link>
+                ) : (
+                  <span>Unknown Artist</span>
+                )}
+              </p>
             </CardHeader>
             <CardContent>
               <p className="mb-6 text-lg">{artwork.description}</p>
               <div className="flex items-center gap-4 mb-6">
-                <span className="text-2xl font-bold text-foreground">₹{artwork.price.toLocaleString("en-IN")}</span>
+                <span className="text-2xl font-bold text-foreground">₹{typeof artwork.price === 'number' ? artwork.price.toLocaleString("en-IN") : 'N/A'}</span>
                 {razorpayOrder ? (
                   <RazorpayCheckout
                     orderId={razorpayOrder.id}
@@ -130,8 +136,12 @@ export default function ArtworkDetailPage() {
                 {success && <div className="text-success mt-2">Payment successful! Check your profile for details.</div>}
               </div>
               <div className="flex items-center gap-3">
-                    <ResponsiveImage src={artwork.artist.image || '/placeholder.svg'} alt={artwork.artist.name} className="w-10 h-10 rounded-full object-cover border" />
-                <span className="font-medium">{artwork.artist.name}</span>
+                    <ResponsiveImage 
+                      src={artwork.artist && artwork.artist.image ? artwork.artist.image : '/placeholder.svg'} 
+                      alt={artwork.artist && artwork.artist.name ? artwork.artist.name : 'Unknown Artist'} 
+                      className="w-10 h-10 rounded-full object-cover border" 
+                    />
+                <span className="font-medium">{artwork.artist && artwork.artist.name ? artwork.artist.name : 'Unknown Artist'}</span>
               </div>
             </CardContent>
           </Card>

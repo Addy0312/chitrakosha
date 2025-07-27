@@ -1,6 +1,8 @@
+
 "use client";
 
 import { useState, useEffect, Suspense, lazy } from 'react';
+import CommissionRequestForm from './components/commission-request-form';
 import { ErrorBoundary } from '@/components/ui/error-boundary';
 import { DynamicImage } from '@/components/ui/dynamic-image';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -14,6 +16,7 @@ export default function Home() {
   const [timeLeft, setTimeLeft] = useState({ days: 2, hours: 14, minutes: 32, seconds: 45 });
   const [cart, setCart] = useState<any[]>([]);
   const [cartMessage, setCartMessage] = useState<string | null>(null);
+  const [showCommissionModal, setShowCommissionModal] = useState(false);
   // Load cart from localStorage on mount
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -43,7 +46,7 @@ export default function Home() {
   // Mock data
   const artworks = [
     {
-      id: 1,
+      id: "1",
       title: "Sunset Over Mumbai",
       artist: "Priya Sharma",
       price: "₹15,000",
@@ -52,7 +55,7 @@ export default function Home() {
       liked: false
     },
     {
-      id: 2,
+      id: "2",
       title: "Digital Dreams",
       artist: "Arjun Patel",
       price: "₹8,500",
@@ -61,7 +64,7 @@ export default function Home() {
       liked: true
     },
     {
-      id: 3,
+      id: "3",
       title: "Street Life Delhi",
       artist: "Kavya Reddy",
       price: "₹12,000",
@@ -70,7 +73,7 @@ export default function Home() {
       liked: false
     },
     {
-      id: 4,
+      id: "4",
       title: "Traditional Patterns",
       artist: "Ravi Kumar",
       price: "₹20,000",
@@ -79,7 +82,7 @@ export default function Home() {
       liked: true
     },
     {
-      id: 5,
+      id: "5",
       title: "Modern Minimalism",
       artist: "Sneha Gupta",
       price: "₹18,500",
@@ -88,7 +91,7 @@ export default function Home() {
       liked: false
     },
     {
-      id: 6,
+      id: "6",
       title: "Nature's Beauty",
       artist: "Amit Singh",
       price: "₹9,000",
@@ -165,11 +168,14 @@ export default function Home() {
               Buy, sell, auction or commission artworks from creative minds across India.
             </p>
             <Button 
+              asChild
               size="lg" 
               className="bg-gradient-saffron hover:opacity-90 shadow-warm text-lg px-8 py-6"
             >
-              Get Started
-              <ArrowRight className="w-5 h-5 ml-2" />
+              <a href="/explore">
+                Get Started
+                <ArrowRight className="w-5 h-5 ml-2" />
+              </a>
             </Button>
           </div>
         </div>
@@ -214,25 +220,27 @@ export default function Home() {
                 <Card key={artwork.id} className="group hover:shadow-card transition-all duration-300 hover:-translate-y-1">
                   <CardHeader className="p-0">
                     <div className="relative overflow-hidden rounded-t-lg">
-                      <DynamicImage
-                        src={artwork.image}
-                        alt={artwork.title}
-                        width={400}
-                        height={192}
-                        className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                      <div className="absolute top-4 right-4">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="bg-white/80 hover:bg-white"
-                        >
-                          {/* <Heart className={`w-4 h-4 ${artwork.liked ? 'fill-red-500 text-red-500' : ''}`} /> */}
-                        </Button>
-                      </div>
-                      <Badge className="absolute top-4 left-4 bg-gradient-saffron">
-                        {artwork.category}
-                      </Badge>
+                      <a href={`/artwork/${artwork.id}`}> 
+                        <DynamicImage
+                          src={artwork.image}
+                          alt={artwork.title}
+                          width={400}
+                          height={192}
+                          className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                        <div className="absolute top-4 right-4 z-10">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="bg-white/80 hover:bg-white"
+                          >
+                            {/* <Heart className={`w-4 h-4 ${artwork.liked ? 'fill-red-500 text-red-500' : ''}`} /> */}
+                          </Button>
+                        </div>
+                        <Badge className="absolute top-4 left-4 bg-gradient-saffron z-10">
+                          {artwork.category}
+                        </Badge>
+                      </a>
                     </div>
                   </CardHeader>
                   <CardContent className="p-6">
@@ -272,9 +280,19 @@ export default function Home() {
               size="lg" 
               variant="outline" 
               className="bg-white/10 border-white/20 text-white hover:bg-white/20 shadow-purple"
+              onClick={() => setShowCommissionModal(true)}
             >
               Request Commission
             </Button>
+            {showCommissionModal && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+                <div className="bg-white rounded-lg p-8 max-w-md w-full relative">
+                  <button className="absolute top-2 right-2 text-2xl" onClick={() => setShowCommissionModal(false)}>&times;</button>
+                  <h2 className="text-2xl font-bold mb-4">Request a Commission</h2>
+                  <CommissionRequestForm onSuccess={() => setShowCommissionModal(false)} />
+                </div>
+              </div>
+            )}
           </div>
         </div>
         {/* Decorative elements */}
